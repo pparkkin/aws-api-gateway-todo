@@ -1,6 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
+    "version": "0.0.1",
     "description": "My first API with Amazon API Gateway.",
     "title": "MyTODO"
   },
@@ -50,6 +51,56 @@
           "type": "mock"
         }
       }
+    },
+    "/todos": {
+      "get": {
+        "tags": [
+          "todos"
+        ],
+        "summary": "List all TODOs",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/TODOs"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string",
+                "description": "URI that may access the resource"
+              },
+              "Content-Type": {
+                "type": "string",
+                "description": "Media type of request"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Content-Type": "'application/json'"
+              },
+              "responseTemplates": {
+                "application/json": "[]"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      }
     }
   },
   "x-amazon-apigateway-documentation": {
@@ -77,7 +128,39 @@
           ],
           "description": "TODO HTML web page containing API usage information"
         }
+      },
+      {
+        "location": {
+          "type": "METHOD",
+          "path": "/todos",
+          "method": "GET"
+        },
+        "properties": {
+          "tags": [
+            "todos"
+          ],
+          "summary": "List all TODOs"
+        }
       }
     ]
+  },
+  "definitions": {
+    "TODOs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TODO"
+      }
+    },
+    "TODO": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    }
   }
 }

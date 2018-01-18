@@ -11,6 +11,9 @@ resource "aws_api_gateway_rest_api" "TODOAPI" {
 resource "aws_api_gateway_deployment" "TODOAPIDeployment" {
   rest_api_id = "${aws_api_gateway_rest_api.TODOAPI.id}"
   stage_name  = "test"
+  # Workaround for deployment not being updated when API changes
+  # see https://github.com/hashicorp/terraform/issues/6613
+  stage_description = "${md5(file("api.json"))}"
 }
 
 output "api_id" {
