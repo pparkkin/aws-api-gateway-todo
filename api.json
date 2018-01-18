@@ -1,0 +1,83 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "My first API with Amazon API Gateway.",
+    "title": "MyTODO"
+  },
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "todos"
+        ],
+        "description": "TODO HTML web page containing API usage information",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "headers": {
+              "Content-Type": {
+                "type": "string",
+                "description": "Media type of request"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Content-Type": "'text/html'"
+              },
+              "responseTemplates": {
+                "text/html": "<html>\n    <head>\n        <style>\n        body {\n            color: #333;\n            font-family: Sans-serif;\n            max-width: 800px;\n            margin: auto;\n        }\n        </style>\n    </head>\n    <body>\n        <h1>Welcome to my TODO API</h1>\n        </body>\n</html>"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "type": "mock"
+        }
+      }
+    }
+  },
+  "x-amazon-apigateway-documentation": {
+    "version": "v2.1",
+    "createdDate": "2016-11-17T07:03:59Z",
+    "documentationParts": [
+      {
+        "location": {
+          "type": "API"
+        },
+        "properties": {
+          "info": {
+            "description": "My first API with Amazon API Gateway."
+          }
+        }
+      },
+      {
+        "location": {
+          "type": "METHOD",
+          "method": "GET"
+        },
+        "properties": {
+          "tags": [
+            "todos"
+          ],
+          "description": "TODO HTML web page containing API usage information"
+        }
+      }
+    ]
+  }
+}
