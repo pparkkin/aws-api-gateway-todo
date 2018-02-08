@@ -7,7 +7,7 @@ A little experiment in AWS Lambda, API Gateway, and DynamoDB.
 Install the boto3 library for your lambda.
 
 ```
-pip install boto3 -t ./get_todos
+pip install boto3 -t ./lambdas
 ```
 
 Deploy using Terraform.

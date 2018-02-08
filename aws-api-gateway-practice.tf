@@ -49,18 +49,18 @@ resource "aws_dynamodb_table" "todos" {
 
 # == Lambdas
 
-data "archive_file" "get_todos" {
+data "archive_file" "lambdas" {
   type = "zip"
-  source_dir = "get_todos"
-  output_path = "get_todos.zip"
+  source_dir = "lambdas"
+  output_path = "lambdas.zip"
 }
 
 resource "aws_lambda_function" "get_todos" {
-  filename = "get_todos.zip"
+  filename = "lambdas.zip"
   function_name = "get_todos"
   role = "${aws_iam_role.iam_for_lambda.arn}"
   handler = "get_todos.get_todos"
-  source_code_hash = "${data.archive_file.get_todos.output_base64sha256}"
+  source_code_hash = "${data.archive_file.lambdas.output_base64sha256}"
   runtime = "python3.6"
 }
 
