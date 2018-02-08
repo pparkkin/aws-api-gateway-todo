@@ -14,3 +14,4 @@
 # everything in lambda dir except lambda itself
 lambdas/*
 !lambdas/get_todos.py
+!lambdas/post_todos.py

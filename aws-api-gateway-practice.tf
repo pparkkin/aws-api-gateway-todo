@@ -64,6 +64,15 @@ resource "aws_lambda_function" "get_todos" {
   runtime = "python3.6"
 }
 
+resource "aws_lambda_function" "post_todos" {
+  filename = "lambdas.zip"
+  function_name = "post_todos"
+  role = "${aws_iam_role.iam_for_lambda.arn}"
+  handler = "post_todos.post_todos"
+  source_code_hash = "${data.archive_file.lambdas.output_base64sha256}"
+  runtime = "python3.6"
+}
+
 # == API Gateway
 
 resource "aws_api_gateway_rest_api" "TODOAPI" {
@@ -161,7 +170,7 @@ resource "aws_api_gateway_integration" "TODOAPI_todos_get_integration" {
 # see:
 # - https://github.com/awslabs/aws-apigateway-importer/issues/170
 # - https://www.terraform.io/docs/providers/aws/r/api_gateway_integration.html#lambda-integration
-resource "aws_lambda_permission" "apigw_lambda" {
+resource "aws_lambda_permission" "apigw_lambda_get_todos" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.get_todos.arn}"
@@ -170,6 +179,43 @@ resource "aws_lambda_permission" "apigw_lambda" {
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
   source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.TODOAPI.id}/*/${aws_api_gateway_method.TODOAPI_todos_get.http_method}${aws_api_gateway_resource.TODOAPI_todos.path}"
 }
+
+resource "aws_api_gateway_method" "TODOAPI_todos_post" {
+  rest_api_id = "${aws_api_gateway_rest_api.TODOAPI.id}"
+  resource_id = "${aws_api_gateway_resource.TODOAPI_todos.id}"
+  http_method = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "TODOAPI_todos_post_integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.TODOAPI.id}"
+  resource_id = "${aws_api_gateway_resource.TODOAPI_todos.id}"
+  http_method = "${aws_api_gateway_method.TODOAPI_todos_post.http_method}"
+  type = "AWS_PROXY"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.post_todos.arn}/invocations"
+  # This needs to be POST for the integration to work.
+  # Does not need to match the API method.
+  # https://github.com/hashicorp/terraform/issues/9271
+  integration_http_method = "POST"
+}
+
+# This is very important, and very picky about the configuration values!
+# If this is not set up correctly the integration will not have permission
+# to call the lambda, and the API calls will fail.
+# see:
+# - https://github.com/awslabs/aws-apigateway-importer/issues/170
+# - https://www.terraform.io/docs/providers/aws/r/api_gateway_integration.html#lambda-integration
+resource "aws_lambda_permission" "apigw_lambda_post_todos" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.post_todos.arn}"
+  principal     = "apigateway.amazonaws.com"
+
+  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+  source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.TODOAPI.id}/*/${aws_api_gateway_method.TODOAPI_todos_post.http_method}${aws_api_gateway_resource.TODOAPI_todos.path}"
+}
+
+# == API Deployment
 
 resource "aws_api_gateway_deployment" "TODOAPI_deployment" {
   rest_api_id = "${aws_api_gateway_rest_api.TODOAPI.id}"
@@ -181,6 +227,8 @@ resource "aws_api_gateway_deployment" "TODOAPI_deployment" {
     "aws_api_gateway_integration.TODOAPI_root_get_integration"
   ]
 }
+
+# == Outputs
 
 output "api_id" {
   value = "${aws_api_gateway_rest_api.TODOAPI.id}"
