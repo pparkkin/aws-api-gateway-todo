@@ -5,6 +5,7 @@
       "Action": "sts:AssumeRole",
       "Principal": {
         "Service": [
+          "dynamodb.amazonaws.com",
           "lambda.amazonaws.com",
           "apigateway.amazonaws.com"
         ]

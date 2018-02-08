@@ -10,3 +10,7 @@
 
 # zipped lambdas
 *.zip
+
+# everything in lambda dir except lambda itself
+get_todos/*
+!get_todos/get_todo.py

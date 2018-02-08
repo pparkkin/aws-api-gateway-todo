@@ -16,20 +16,51 @@ resource "aws_iam_policy" "iam_for_s3" {
   policy = "${file("s3-policy.json")}"
 }
 
-resource "aws_iam_policy_attachment" "policy_attachment" {
-  name       = "policy_attachment"
+resource "aws_iam_policy_attachment" "lambda_s3" {
+  name       = "lambda_s3"
   roles      = ["${aws_iam_role.iam_for_lambda.name}"]
   policy_arn = "${aws_iam_policy.iam_for_s3.arn}"
 }
 
+resource "aws_iam_policy" "iam_for_dynamodb" {
+  name = "iam_for_dynamodb"
+  policy = "${file("dynamodb-policy.json")}"
+}
+
+resource "aws_iam_policy_attachment" "lambda_dynamodb" {
+  name       = "lambda_dynamodb"
+  roles      = ["${aws_iam_role.iam_for_lambda.name}"]
+  policy_arn = "${aws_iam_policy.iam_for_dynamodb.arn}"
+}
+
+# == DynamoDB Table
+
+resource "aws_dynamodb_table" "todos" {
+  name = "todos"
+  hash_key = "TodoId"
+  read_capacity  = 20
+  write_capacity = 20
+
+  attribute {
+    name = "TodoId"
+    type = "S"
+  }
+}
+
 # == Lambdas
+
+data "archive_file" "get_todos" {
+  type = "zip"
+  source_dir = "get_todos"
+  output_path = "get_todos.zip"
+}
 
 resource "aws_lambda_function" "get_todos" {
   filename = "get_todos.zip"
   function_name = "get_todos"
   role = "${aws_iam_role.iam_for_lambda.arn}"
   handler = "get_todos.get_todos"
-  source_code_hash = "${base64sha256(file("get_todos.zip"))}"
+  source_code_hash = "${data.archive_file.get_todos.output_base64sha256}"
   runtime = "python3.6"
 }
 
