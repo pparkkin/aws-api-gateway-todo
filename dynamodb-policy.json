@@ -4,8 +4,7 @@
     {
       "Effect": "Allow",
       "Action": [
-        "dynamodb:DescribeTable",
-        "dynamodb:Query",
+        "dynamodb:PutItem",
         "dynamodb:Scan"
       ],
       "Resource": "arn:aws:dynamodb:*:*:table/todos"
