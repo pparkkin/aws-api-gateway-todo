@@ -224,6 +224,7 @@ resource "aws_api_gateway_deployment" "TODOAPI_deployment" {
   # up before deploying the API.
   depends_on = [
     "aws_api_gateway_integration.TODOAPI_todos_get_integration",
+    "aws_api_gateway_integration.TODOAPI_todos_post_integration",
     "aws_api_gateway_integration.TODOAPI_root_get_integration"
   ]
 }
